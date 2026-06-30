@@ -1,0 +1,143 @@
+body {
+    font-family: 'Kanit', sans-serif;
+    background-color: #fdf2f8; /* สีชมพูอ่อน pastel */
+    margin: 0;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+}
+
+.page-container {
+    animation: fadeIn 0.5s ease-in-out;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Animation หลอดโหลด */
+.progress-bar-fill {
+    width: 0%;
+    transition: width 6s linear; /* โหลด 6 วินาที */
+}
+
+/* Animation ปุ่มหนี */
+#btn-yes {
+    transition: transform 0.15s ease-out;
+}
+
+/* End Credits Style */
+#credits-container {
+    background-color: #000;
+    color: #fff;
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    overflow: hidden;
+    display: none; /* ซ่อนไว้ก่อนรอให้กดปุ่มเริ่ม */
+    z-index: 50;
+}
+.credit-content {
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    bottom: -100%; /* เริ่มจากด้านล่างสุด */
+    animation: scrollCredits 40s linear forwards; /* เลื่อนช้าๆ */
+}
+@keyframes scrollCredits {
+    0% { bottom: -100%; }
+    100% { bottom: 150%; }
+}
+.credit-image {
+    max-width: 300px;
+    border-radius: 10px;
+    margin: 20px auto;
+    display: block;
+    box-shadow: 0 4px 15px rgba(255,105,180,0.3);
+}
+/* เพิ่มเพื่อเปลี่ยนเมาส์เป็นรูปหัวใจเล็กๆ (Optional) */
+body {
+    cursor: url('https://cdn-icons-png.flaticon.com/24/833/833472.png'), auto;
+}
+/* เพิ่มรูปเมาส์ Kuromi สำหรับทุกหน้า */
+body {
+    /* คุณสามารถเปลี่ยน URL ของรูปภาพได้ตามต้องการ */
+    cursor: url('https://img.icons8.com/color/48/000000/kuromi.png'), auto;
+}
+
+/* หากต้องการให้ปุ่มต่างๆ มี Cursor เป็นแบบ pointer (มือชี้) เหมือนเดิม */
+button, select, input[type="radio"], label {
+    cursor: url('https://img.icons8.com/color/32/000000/pointer.png'), pointer;
+}
+body {
+    /* เพิ่ม auto fallback และระบุประเภทให้ชัดเจน */
+    cursor: url('https://img.icons8.com/color/32/000000/kuromi.png'), auto;
+}
+
+/* หากต้องการให้ปุ่มต่างๆ มี Cursor เป็นแบบ pointer (มือชี้) เหมือนเดิม */
+button, select, input[type="radio"], label {
+    cursor: url('https://img.icons8.com/color/32/000000/pointer.png'), pointer;
+}
+
+body {
+    font-family: 'Kanit', sans-serif;
+    background-color: #fdf2f8;
+    margin: 0;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+}
+
+.page-container {
+    animation: fadeIn 0.5s ease-in-out;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.progress-bar-fill { width: 0%; transition: width 6s linear; }
+#btn-yes { transition: transform 0.15s ease-out; }
+
+#credits-container {
+    background-color: #000;
+    color: #fff;
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    overflow: hidden;
+    display: none;
+    z-index: 50;
+}
+.credit-content {
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    bottom: -100%;
+    animation: scrollCredits 40s linear forwards;
+}
+@keyframes scrollCredits {
+    0% { bottom: -100%; }
+    100% { bottom: 150%; }
+}
+.credit-image {
+    max-width: 300px;
+    border-radius: 10px;
+    margin: 20px auto;
+    display: block;
+    box-shadow: 0 4px 15px rgba(255,105,180,0.3);
+}

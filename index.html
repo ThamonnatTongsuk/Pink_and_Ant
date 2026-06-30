@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>For Pinkie - ข้อมูล</title>
+    
+    <!-- นำเข้า Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- นำเข้า Confetti (พลุหัวใจ) -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <!-- นำเข้า Font Itim (ฟอนต์น่ารักที่ใช้แทน Somtam ชั่วคราว) -->
+    <link href="https://fonts.googleapis.com/css2?family=Itim&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Itim', cursive; 
+            background-color: #94cdf2; 
+            margin: 0;
+            overflow-x: hidden;
+            overflow-y: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            cursor: url('https://img.icons8.com/color/32/000000/kuromi.png'), auto;
+        }
+
+        button, input[type="radio"], label {
+            cursor: url('https://img.icons8.com/color/32/000000/kuromi.png'), pointer !important;
+        }
+
+        .page-container {
+            animation: fadeIn 0.5s ease-in-out;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            z-index: 10;
+            position: relative;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* อนิเมชั่นคำว่า "อิอิ" ลอยขึ้นและจางหาย */
+        @keyframes floatText {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-50px) scale(1.2); }
+        }
+
+        .click-text {
+            position: fixed;
+            font-size: 3.5rem;
+            font-weight: bold;
+            pointer-events: none;
+            animation: floatText 1s ease-out forwards;
+            z-index: 9999;
+            text-shadow: 1px 1px 0 #fff, -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff;
+        }
+
+        /* Animation สำหรับพื้นหลัง */
+        .bg-element {
+            position: fixed;
+            z-index: 0;
+            opacity: 0.6;
+        }
+        @keyframes floatUp {
+            0% { transform: translateY(110vh) rotate(0deg); }
+            100% { transform: translateY(-10vh) rotate(360deg); }
+        }
+        @keyframes floatDown {
+            0% { transform: translateY(-10vh) rotate(0deg); }
+            100% { transform: translateY(110vh) rotate(-360deg); }
+        }
+
+        /* ===================================================
+           ลูกเล่นใหม่: อนิเมชั่นสำหรับป้าย Click me และรูปแมวที่ซ่อน
+           =================================================== */
+        
+        /* ป้าย Click me เต้น(ขยายขึ้นลง)และเปลี่ยนสีตลอดเวลา */
+        @keyframes pulseSign {
+            0%   { transform: scale(0.9) translateY(0); color: #ef4444; } /* แดง */
+            25%  { transform: scale(1.15) translateY(-5px); color: #3b82f6; } /* ฟ้า */
+            50%  { transform: scale(0.9) translateY(0); color: #10b981; } /* เขียว */
+            75%  { transform: scale(1.15) translateY(-5px); color: #d946ef; } /* ชมพูม่วง */
+            100% { transform: scale(0.9) translateY(0); color: #ef4444; }
+        }
+        #click-me-sign {
+            animation: pulseSign 0.6s infinite ease-in-out;
+            transition: opacity 0.3s ease;
+        }
+
+        /* อนิเมชั่นตอนรูปลอยออกมาตรงกลางจอและขยายใหญ่บึ้ม */
+        .cat-pop {
+            /* เลื่อนไปทางซ้ายและลงมา เพื่อให้อยู่ตรงกลางจอ พร้อมขยายขนาด 6 เท่า */
+            transform: translate(-180px, 180px) scale(6) !important;
+        }
+
+        /* อนิเมชั่นปุ่มส่งคำตอบกระโดดหนีไปทางซ้าย */
+        .dodge-left {
+            transform: translateX(-40px) !important;
+            background-color: #f472b6 !important; /* เปลี่ยนสีเป็นชมพูอ่อนนิดๆ ตอนโดนแกล้ง */
+        }
+    </style>
+</head>
+<body>
+
+    <!-- คอนเทนเนอร์สำหรับใส่ หัวใจ ดาว และรูป PNG/GIF พื้นหลัง -->
+    <div id="bg-elements-container"></div>
+
+    <div class="page-container flex-col items-center">
+        <!-- เราหุ้มด้วย relative container เพื่อให้แมวไปซ่อนอยู่ด้านหลังกล่องขาวได้พอดี -->
+        <div class="relative w-full max-w-md">
+            
+            <!-- ====== ลูกเล่นที่ 1: รูปแอบซ่อนหลังกรอบขาว ====== -->
+            <!-- z-0 จะอยู่หลังกรอบขาวที่มี z-10 ทำให้ตัวโดนบัง -->
+            <div id="hidden-cat-wrap" class="absolute -top-16 right-6 z-0 cursor-pointer flex flex-col items-center transition-all duration-300">
+                <div id="click-me-sign" class="text-xl font-extrabold mb-1 pointer-events-none drop-shadow-lg" style="text-shadow: 2px 2px 0 #fff, -2px -2px 0 #fff, 2px -2px 0 #fff, -2px 2px 0 #fff;">
+                    👇 กดหน่อย!!
+                </div>
+                <!-- transform: translateY(45px) คือการกดรูปลงไปหลังกล่องขาว ให้เห็นแค่ช่วงหัวโผล่มานิดนึง -->
+<img
+    src="IMG_2604.jpg"
+    alt="peeking cat"
+    id="peeking-cat"
+    class="w-20 h-50 object-cover object-top transition-all duration-700 origin-top border-2 rounded-lg shadow-lg"
+    style="transform: translateY(10px); border-color: #fa41bf; box-shadow: 0 0 50px rgba(250, 65, 191, 0.4);"
+>            </div>
+            <!-- ======================================= -->
+
+            <!-- กล่องขาวหลัก (ใส่ relative z-10 เพื่อให้ทับแมว) -->
+            <div class="bg-white p-10 rounded-3xl shadow-2xl w-full text-center border-4 border-pink-500 relative z-10">
+                <h1 class="text-3xl font-semibold text-blue-500 mb-8">ขอเก็บข้อมูลนะค้าบบบ</h1>
+                
+                <form id="info-form" onsubmit="goToPage2(event)">
+                    <input type="text" placeholder="ชื่อ" required class="w-full text-pink-500 mb-4 p-3 border-2 border-blue-500 rounded-xl focus:outline-none focus:border-blue-500 text-lg">
+                    <input type="text" placeholder="นามสกุล" required class="w-full text-pink-500 mb-4 p-3 border-2 border-blue-500 rounded-xl focus:outline-none focus:border-blue-500 text-lg">
+                    <input type="text" placeholder="ชื่อเล่น" required class="w-full text-pink-500 mb-4 p-3 border-2 border-blue-500 rounded-xl focus:outline-none focus:border-blue-500 text-lg">
+                    <input type="number" placeholder="อายุ" required class="w-full  text-pink-500 mb-6 p-3 border-2 border-blue-500 rounded-xl focus:outline-none focus:border-blue-500 text-lg">
+                    
+                    <div class="mb-6">
+                        <p class="text-left text-gray-500 mb-2 ml-1 text-lg">เพศ:</p>
+                        <div class="flex justify-around bg-pink-50 p-4 rounded-xl border-2 border-pink-400">
+                            <label class="flex items-center space-x-2">
+                                <input type="radio" name="gender" value="male" required class="w-5 h-5 text-blue-500 accent-blue-500">
+                                <span class="text-lg text-gray-700">ชาย</span>
+                            </label>
+                            <label class="flex items-center space-x-2">
+                                <input type="radio" name="gender" value="female" required class="w-5 h-5 text-pink-500 accent-pink-500">
+                                <span class="text-lg text-gray-700">หญิง</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- เพิ่ม id="submit-btn" และ transition-all เพื่อให้มันเคลื่อนไหวสมูทตอนหนี -->
+                    <button id="submit-btn" type="submit" class="w-full bg-pink-500 text-white font-semibold p-4 rounded-xl hover:bg-pink-600 transition-all duration-300 text-xl shadow-lg transform hover:scale-105">
+                        ส่งคำตอบ
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // ลูกเล่นที่ 1: ซ่อนรูปแมว แล้วกดให้เด้งออกมากลางจอ 5 วิ
+        // ==========================================
+        const catWrap = document.getElementById('hidden-cat-wrap');
+        const peekingCat = document.getElementById('peeking-cat');
+        const clickMeSign = document.getElementById('click-me-sign');
+
+        catWrap.addEventListener('click', (e) => {
+            e.stopPropagation(); // กันเอฟเฟกต์ "อิอิ" (เมาส์คลิก) ทับซ้อน
+            
+            // ดันให้ Wrapper มาอยู่ข้างหน้าสุด (ทะลุกรอบขาว)
+            catWrap.classList.remove('z-0');
+            catWrap.classList.add('z-50');
+            
+            // ซ่อนป้าย click me ตอนรูปเด้ง
+            clickMeSign.style.opacity = '0';
+            
+            // ทำให้รูปเด้งขยายออกมากลางจอ
+            peekingCat.classList.add('cat-pop');
+            
+            // รอ 5 วินาทีแล้วดึงกลับที่เดิม
+            setTimeout(() => {
+                peekingCat.classList.remove('cat-pop');
+                
+                // รอให้รูปหดกลับลงไปหลังกล่องเสร็จก่อนค่อยโชว์ป้ายใหม่
+                setTimeout(() => {
+                    catWrap.classList.remove('z-50');
+                    catWrap.classList.add('z-0');
+                    clickMeSign.style.opacity = '1';
+                }, 700);
+            }, 5000);
+        });
+
+
+        // ==========================================
+        // ลูกเล่นที่ 2: เอฟเฟกต์คลิกเมาส์แล้วขึ้นคำว่า "อิอิ" 
+        // ==========================================
+        const colors = ['red', 'green', 'yellow', 'deeppink', 'blue', 'cyan', 'orange', 'purple'];
+
+        document.addEventListener('click', function(e) {
+            const tag = e.target.tagName.toLowerCase();
+            if (tag === 'input' || tag === 'button' || tag === 'form' || tag === 'label') {
+                return; 
+            }
+
+            const textElement = document.createElement('div');
+            textElement.textContent = "อิอิ ";
+            textElement.className = 'click-text';
+            
+            const randomColor = colors[Math.floor(Math.random() * colors.length)];
+            textElement.style.color = randomColor;
+
+            textElement.style.left = `${e.clientX - 15}px`;
+            textElement.style.top = `${e.clientY - 20}px`;
+
+            document.body.appendChild(textElement);
+
+            setTimeout(() => {
+                textElement.remove();
+            }, 1000);
+        });
+
+
+        // ==========================================
+        // ลูกเล่นที่ 3: สร้างพื้นหลัง ดาว & หัวใจ & รูปภาพ ลอยไปมา
+        // ==========================================
+        const bgContainer = document.getElementById('bg-elements-container');
+        const heartSVG = `<svg viewBox="0 0 24 24" width="40" height="40" fill="#ffb6c1" stroke="#d81b60" stroke-width="2"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`;
+        const starSVG = `<svg viewBox="0 0 24 24" width="45" height="45" fill="#fff59d" stroke="#f57f17" stroke-width="2"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>`;
+        const catImage = `<img src="cat1.png" alt="cat" width="150" height="105" style="object-fit: contain;">`;
+        const catGifImage = `<img src="cat2.gif" alt="cat gif" width="105" height="100" style="object-fit: contain;">`;
+        const catGifImage2 = `<img src="c3.png" alt="cat gif 2" width="100" height="55" style="object-fit: contain;">`;
+
+        function createBgElement(type) {
+            const el = document.createElement('div');
+            el.className = 'bg-element';
+            
+            if (type === 'heart') { el.innerHTML = heartSVG; } 
+            else if (type === 'star') { el.innerHTML = starSVG; } 
+            else if (type === 'cat') { el.innerHTML = catImage; } 
+            else if (type === 'catGif') { el.innerHTML = catGifImage; } 
+            else if (type === 'catGif2') { el.innerHTML = catGifImage2; }
+
+            const scale = Math.random() * 0.7 + 0.5; 
+            el.style.transform = `scale(${scale})`;
+            el.style.left = `${Math.random() * 100}vw`;
+
+            const isFloatingUp = Math.random() > 0.5;
+            const duration = Math.random() * 20 + 15;
+            
+            if (isFloatingUp) {
+                el.style.animation = `floatUp ${duration}s linear infinite`;
+            } else {
+                el.style.animation = `floatDown ${duration}s linear infinite`;
+            }
+
+            el.style.animationDelay = `-${Math.random() * 50}s`;
+            bgContainer.appendChild(el);
+        }
+
+        // สร้างของตกแต่งอย่างละ 7 ชิ้น
+        for (let i = 0; i < 7; i++) {
+            createBgElement('heart');   
+            createBgElement('star');    
+            createBgElement('cat');     
+            createBgElement('catGif');  
+            createBgElement('catGif2'); 
+        }
+
+
+        // ==========================================
+        // ลูกเล่นที่ 4: ปุ่มเปลี่ยนหน้า (ปุ่มหนีถาวรในครั้งแรก)
+        // ==========================================
+        function triggerHeartExplosion() {
+            confetti({
+                particleCount: 50,
+                spread: 70,
+                origin: { y: 0.6 },
+                shapes: ['heart'],
+                colors: ['#ff69b4', '#ff1493', '#db7093']
+            });
+        }
+
+        // ตัวแปรเช็คว่าเคยโดนแกล้งกดปุ่มหรือยัง
+        let hasTeasedSubmit = false;
+
+        function goToPage2(e) {
+            e.preventDefault(); // ป้องกันฟอร์มรีเฟรชหน้า
+            
+            const btn = document.getElementById('submit-btn');
+
+            // เงื่อนไข: ถ้ายังไม่เคยโดนแกล้ง (กดครั้งแรก)
+            if (!hasTeasedSubmit) {
+                hasTeasedSubmit = true; // มาร์คไว้ว่าโดนแกล้งไปแล้วนะ
+                
+                // เลื่อนปุ่มไปทางซ้ายถาวร (ใส่คลาสแล้วไม่ต้องเอาออก)
+                btn.classList.add('dodge-left');
+                
+                // เปลี่ยนข้อความเป็น "อิอิ " ทันที
+                btn.innerHTML = 'อิอิ ';
+
+                // รอ 2 วินาที ค่อยเปลี่ยนเป็น "กดอีกทีนะครับ" (ปุ่มยังคงอยู่ทางซ้ายถาวร)
+                setTimeout(() => {
+                    btn.innerHTML = 'กดอีกทีนะครับ';
+                }, 1000);
+                
+                return; // จบการทำงานแค่นี้ ยังไม่ไปหน้าต่อไป
+            }
+
+            // ถ้าเคยกดแล้ว (กดครั้งที่ 2 เป็นต้นไป)
+            triggerHeartExplosion(); // ระเบิดพลุ
+            
+            // แจ้งเตือนสั้นๆ สำหรับหน้าจอ Preview (ในระบบจริงจะเด้งไปหน้า 2)
+           setTimeout(() => { 
+                window.location.href = 'page2.html'; // <--- ใส่โค้ดนี้แทน
+            }, 1000);
+        }
+    </script>
+</body>
+</html>

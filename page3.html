@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>For Pinkie - กำลังประมวลผล</title>
+    
+    <!-- นำเข้า Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- นำเข้า Font Itim เพื่อให้เข้ากับหน้าอื่นๆ -->
+    <link href="https://fonts.googleapis.com/css2?family=Itim&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Itim', cursive; 
+            background-color: #FFB6C1; /* สีพื้นหลังเดียวกับหน้าแรกและหน้าสอง */
+            margin: 0;
+            overflow-x: hidden;
+            overflow-y: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            /* เปลี่ยนเมาส์เป็นรูป Kuromi */
+            cursor: url('https://img.icons8.com/color/32/000000/kuromi.png'), auto;
+        }
+
+        .page-container {
+            animation: fadeIn 0.5s ease-in-out;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            z-index: 10;
+            position: relative;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Animation สำหรับพื้นหลัง */
+        .bg-element {
+            position: fixed;
+            z-index: 0;
+            opacity: 0.6;
+            pointer-events: none;
+        }
+        @keyframes floatUp {
+            0% { transform: translateY(110vh) rotate(0deg); }
+            100% { transform: translateY(-10vh) rotate(360deg); }
+        }
+        @keyframes floatDown {
+            0% { transform: translateY(-10vh) rotate(0deg); }
+            100% { transform: translateY(110vh) rotate(-360deg); }
+        }
+
+        /* Animation สำหรับรูปแมวตอนคลิก */
+        .click-cat {
+            position: fixed;
+            pointer-events: none;
+            animation: floatText 1s ease-out forwards;
+            z-index: 9999;
+            width: 80px; /* ปรับขนาดแมวตอนกดได้ตรงนี้ */
+            height: auto;
+        }
+
+        @keyframes floatText {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-50px) scale(1.2); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- คอนเทนเนอร์สำหรับใส่พื้นหลัง ดาว/หัวใจ/แมว -->
+    <div id="bg-elements-container"></div>
+
+    <div class="page-container">
+        <!-- ปรับแต่งกล่องให้เข้ากับธีมของหน้าก่อนๆ -->
+        <div class="bg-white p-10 rounded-3xl shadow-2xl w-full max-w-md text-center border-4 border-blue-500 relative z-10 transition-all duration-300">
+            
+            <h2 class="text-3xl font-semibold text-blue-500 mb-4">กำลังประมวลผลคำตอบ...</h2>
+            <p class="text-lg text-pink-500 mb-8 font-medium">กรุณารอสักครู่ อย่าพึ่งปิดหน้านี้นะค้าบ ✨</p>
+            
+            <!-- หลอด Loading -->
+            <div class="w-full bg-blue-100 rounded-full h-6 overflow-hidden border-2 border-blue-200 relative">
+                <div id="loading-bar" class="bg-gradient-to-r from-pink-400 to-blue-400 h-full rounded-full w-0 transition-all duration-200 ease-linear shadow-inner"></div>
+            </div>
+            
+            <!-- ตัวเลข % โหลด -->
+            <p id="loading-text" class="text-blue-500 mt-4 text-xl font-bold">0%</p>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // ส่วนที่ 1: ระบบโหลดเปอร์เซ็นต์แบบหลอกๆ (Animation)
+        // ==========================================
+        const loadingBar = document.getElementById('loading-bar');
+        const loadingText = document.getElementById('loading-text');
+        let progress = 0;
+
+        // ให้โหลดเพิ่มขึ้นเรื่อยๆ ทุกๆ 150 มิลลิวินาที
+        const interval = setInterval(() => {
+            progress += Math.random() * 5 + 2; // สุ่มเพิ่มทีละ 2% ถึง 7%
+            
+            if (progress >= 100) {
+                progress = 100;
+                clearInterval(interval);
+                
+                // เมื่อโหลดเสร็จ 100% ให้ทำอะไรต่อ (เช่น เด้งไปหน้าถัดไป)
+                setTimeout(() => {
+                    window.location.href = 'page4.html';
+                }, 800);
+            }
+
+            loadingBar.style.width = progress + '%';
+            loadingText.innerText = Math.floor(progress) + '%';
+        }, 150);
+
+
+        // ==========================================
+        // ส่วนที่ 2: พื้นหลัง ดาว & หัวใจ & รูปภาพ
+        // ==========================================
+        const bgContainer = document.getElementById('bg-elements-container');
+        const heartSVG = `<svg viewBox="0 0 24 24" width="40" height="40" fill="#ffb6c1" stroke="#d81b60" stroke-width="2"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`;
+        const starSVG = `<svg viewBox="0 0 24 24" width="45" height="45" fill="#fff59d" stroke="#f57f17" stroke-width="2"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>`;
+        const catImage = `<img src="cat1.png" alt="cat" width="150" height="105" style="object-fit: contain;">`;
+        const catGifImage = `<img src="cat2.gif" alt="cat gif" width="105" height="100" style="object-fit: contain;">`;
+        const catGifImage2 = `<img src="c3.png" alt="cat gif 2" width="100" height="55" style="object-fit: contain;">`;
+
+        function createBgElement(type) {
+            const el = document.createElement('div');
+            el.className = 'bg-element';
+            
+            if (type === 'heart') { el.innerHTML = heartSVG; } 
+            else if (type === 'star') { el.innerHTML = starSVG; } 
+            else if (type === 'cat') { el.innerHTML = catImage; } 
+            else if (type === 'catGif') { el.innerHTML = catGifImage; } 
+            else if (type === 'catGif2') { el.innerHTML = catGifImage2; }
+
+            const scale = Math.random() * 0.7 + 0.5; 
+            el.style.transform = `scale(${scale})`;
+            el.style.left = `${Math.random() * 100}vw`;
+
+            const isFloatingUp = Math.random() > 0.5;
+            const duration = Math.random() * 20 + 15;
+            
+            if (isFloatingUp) {
+                el.style.animation = `floatUp ${duration}s linear infinite`;
+            } else {
+                el.style.animation = `floatDown ${duration}s linear infinite`;
+            }
+
+            el.style.animationDelay = `-${Math.random() * 50}s`;
+            bgContainer.appendChild(el);
+        }
+
+        for (let i = 0; i < 7; i++) {
+            createBgElement('heart');   
+            createBgElement('star');    
+            createBgElement('cat');     
+            createBgElement('catGif');  
+            createBgElement('catGif2'); 
+        }
+
+        // ==========================================
+        // ส่วนที่ 3: เอฟเฟกต์คลิกเมาส์ (แสดงรูป cat2.gif)
+        // ==========================================
+        document.addEventListener('click', function(e) {
+            // สร้าง element รูปภาพ
+            const imgElement = document.createElement('img');
+            imgElement.src = 'cat2.gif';
+            imgElement.className = 'click-cat';
+            
+            // ขยับตำแหน่งให้อยู่ตรงกลางเมาส์ (ลบด้วยครึ่งหนึ่งของขนาดความกว้าง 80px)
+            imgElement.style.left = `${e.clientX - 40}px`; 
+            imgElement.style.top = `${e.clientY - 40}px`; 
+
+            // นำรูปใส่ลงในหน้าเว็บ
+            document.body.appendChild(imgElement);
+
+            // ลบออกเมื่ออนิเมชั่นลอยขึ้นเล่นจบ (1 วินาที)
+            setTimeout(() => {
+                imgElement.remove();
+            }, 1000);
+        });
+
+    </script>
+</body>
+</html>

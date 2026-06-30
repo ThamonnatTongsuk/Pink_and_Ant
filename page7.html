@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>For Pinkie - Thank You</title>
+    
+    <!-- นำเข้า Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- นำเข้า Font Itim เพื่อให้เข้ากับหน้าอื่นๆ -->
+    <link href="https://fonts.googleapis.com/css2?family=Itim&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Itim', cursive; 
+            background-color: #FFB6C1; /* สีพื้นหลังชมพูหวาน */
+            margin: 0;
+            overflow: hidden; /* บล็อก Scrollbar หลักเพื่อเน้นการเคลื่อนที่ภายใน */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            cursor: url('https://img.icons8.com/color/32/000000/kuromi.png'), auto;
+        }
+
+        button {
+            cursor: url('https://img.icons8.com/color/32/000000/kuromi.png'), pointer !important;
+        }
+
+        /* Animation สำหรับพื้นหลัง */
+        .bg-element {
+            position: fixed;
+            z-index: 0;
+            opacity: 0.5;
+            pointer-events: none;
+        }
+        @keyframes floatUp {
+            0% { transform: translateY(110vh) rotate(0deg); }
+            100% { transform: translateY(-10vh) rotate(360deg); }
+        }
+        @keyframes floatDown {
+            0% { transform: translateY(-10vh) rotate(0deg); }
+            100% { transform: translateY(110vh) rotate(-360deg); }
+        }
+
+        /* เอฟフェกต์คลิกเมาส์รูปเดี่ยวเด้งขึ้นมา 2 วิ */
+        .click-img {
+            position: fixed;
+            pointer-events: none;
+            animation: floatText 2s ease-out forwards;
+            z-index: 9999;
+            width: 250px; 
+            height: 250px;
+            object-fit: cover;
+            border: 3px solid #2596be; /* กรอบสีฟ้าตามที่สั่ง */
+            border-radius: 12px;
+            box-shadow: 0 0 20px rgba(114, 188, 244, 0.8); /* เงาสีฟ้าเรืองแสง */
+        }
+        @keyframes floatText {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-70px) scale(1.3); }
+        }
+
+        /* อนิเมชั่นเลื่อนรูปเครดิตขึ้นข้างบน */
+        @keyframes scrollCredits {
+            0% { transform: translateY(80vh); }
+            100% { transform: translateY(-2400px); } /* เลื่อนขึ้นตามจำนวนความยาวรูป */
+        }
+        .scrolling-credits {
+            animation: scrollCredits 45s linear infinite; /* ความเร็วเลื่อนขึ้น */
+        }
+        
+        /* ปรับสไตล์รูปภาพใน Credit */
+        .credit-pic {
+            width: 100%;
+            aspect-ratio: 1/1;
+            object-fit: cover;
+            border: 4px solid #2596be; /* กรอบสีฟ้า */
+            border-radius: 16px;
+            box-shadow: 0 10px 20px rgba(37, 150, 190, 0.3);
+            transition: transform 0.3s;
+        }
+        .credit-pic:hover {
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 🎵 ไฟล์เสียง BGM IMG_2612.mp3 เล่นวนซ้ำ 🎵 -->
+    <audio id="bgm-audio" src="IMG_2612.mp3" loop></audio>
+
+    <!-- คอนเทนเนอร์สำหรับใส่พื้นหลัง ดาว/หัวใจ/แมว -->
+    <div id="bg-elements-container"></div>
+
+    <!-- ส่วนปุ่มกดเริ่มต้นก่อนเข้าหน้าแบบเต็มรูปแบบ (เพื่อแก้ไขปัญหา Autoplay เสียงโดนบล็อก) -->
+    <div class="page-container z-50" id="start-btn-container">
+        <div class="bg-white p-10 rounded-3xl shadow-2xl text-center border-4 border-pink-300 max-w-sm">
+            <h2 class="text-3xl font-bold text-pink-500 mb-6">เริ่มต้นเดือนใหม่แล้วน้า... 💖</h2>
+            <button onclick="startCredits()" class="bg-gradient-to-r from-pink-400 to-pink-500 text-white font-bold py-4 px-10 rounded-full shadow-lg text-2xl animate-bounce hover:scale-105 transition-all border-2 border-pink-300">
+                คลิกเพื่อรับชม 💖
+            </button>
+        </div>
+    </div>
+
+    <!-- หน้าจอเนื้อหาหลัก (ซ่อนไว้ก่อนจนกว่าจะกดปุ่ม) -->
+    <!-- ปรับการใช้ flex flex-col h-screen เพื่อแยกสัดส่วน Header -> Main -> Footer อย่างมีระบบ ไม่ทับซ้อนกันแน่นอน -->
+    <div id="main-content" class="hidden w-full h-screen flex flex-col justify-between relative z-10">
+        
+        <!-- ==============================================
+             ส่วนที่ 1: HEADER (แถบคาดยาวอยู่ด้านบนสุดของหน้าเว็บ มีปุ่มปิดเสียงอยู่บนซ้าย)
+             ============================================== -->
+        <header class="w-full bg-pink-600 bg-opacity-90 py-4 px-6 shadow-md z-20 text-center flex-shrink-0 border-b-2 border-white relative">
+            <!-- ปุ่มเปิด/ปิดเสียงลำโพงอยู่มุมบนซ้ายของ Header -->
+            <button id="mute-btn" onclick="toggleMute(event)" class="absolute left-6 top-1/2 -translate-y-1/2 bg-white bg-opacity-20 hover:bg-opacity-35 p-2 rounded-full transition-all border border-white border-opacity-40 flex items-center justify-center shadow-inner" title="เปิด/ปิดเสียง">
+                <!-- เริ่มต้นแสดงไอคอนแบบเปิดเสียง (Unmuted) -->
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-7 h-7 text-white">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.114 5.636a9 9 0 0 1 0 12.728M16.463 8.288a5.25 5.25 0 0 1 0 7.424M6.75 8.25l4.72-4.72a.75.75 0 0 1 1.28.53v15.88a.75.75 0 0 1-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 0 1 2.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75Z" />
+                </svg>
+            </button>
+            
+            <h1 class="text-3xl md:text-4xl font-bold text-white drop-shadow-md px-12">
+                เริ่มต้นเดือนใหม่แล้วน้ะค้าบ คุณพิงค์ ✨
+            </h1>
+        </header>
+
+        <!-- Layout ตรงกลาง: ยืดขยายความสูงอัตโนมัติ ไม่ให้ชน Header/Footer และแบ่ง ซ้าย-ขวา -->
+        <div class="flex-grow w-full flex flex-col md:flex-row gap-6 p-4 md:p-6 items-stretch justify-between overflow-hidden">
+            
+            <!-- ==============================================
+                 ส่วนที่ 2: เครดิตรูปภาพเลื่อนขึ้น (ย้ายมาไว้ฝั่งซ้าย)
+                 ============================================== -->
+            <main class="w-full md:w-[55%] bg-black bg-opacity-30 rounded-3xl border-4 border-white relative overflow-hidden flex flex-col items-center">
+                <!-- พื้นที่สำหรับขบวนรูปเลื่อนขึ้นภายในกรอบซ้าย -->
+                <div class="w-full px-6 relative h-full">
+                    <div class="scrolling-credits grid grid-cols-2 gap-6 pt-[100px]" id="pictures-container">
+                        <!-- รูป 1.jpg ถึง 28.jpg จะเรียงหน้ากระดานคู่ 2 แถวและสอดแทรกตรงนี้ด้วย JS -->
+                    </div>
+                </div>
+            </main>
+
+            <!-- ==============================================
+                 ส่วนที่ 3: A-SIDE คำอวยพร (ย้ายมาฝั่งขวา และย่อตัวอักษรลงนิดหน่อย)
+                 ============================================== -->
+            <aside class="w-full md:w-[40%] bg-white bg-opacity-95 p-6 md:p-8 rounded-3xl shadow-2xl border-4 border-blue-400 flex flex-col justify-between overflow-y-auto">
+                <div>
+                    <!-- ปรับข้อความหัวข้อตามความต้องการของน้องแอนท์ -->
+                    <h2 class="text-2xl font-extrabold text-blue-600 mb-4 border-b-4 border-pink-200 pb-2 text-center">
+                        คำอวยพรจากน้องแอ๊นท์ให้คุณพิงค์ ✨
+                    </h2>
+                    
+                    <!-- โซนข้อความอวยพรที่ย่อขนาดตัวอักษรจาก text-xl เป็น text-lg -->
+                    <div id="blessing-container" class="space-y-3 text-lg text-gray-700 leading-relaxed font-semibold text-left">
+                        <!-- คำอวยพรอ้างอิงคำตอบจะอัปเดตตรงนี้ผ่าน JavaScript -->
+                    </div>
+                </div>
+
+                <!-- ข้อความทิ้งท้ายสุดซึ้งในกระดาษอวยพร -->
+                <div id="blessing-footer" class="mt-6 pt-4 border-t-2 border-gray-100 text-center text-pink-500 font-bold text-xl md:text-2xl">
+                    ขอให้เดือนนี้ใจดีกับ พี่พิงค์น้าาา 💖
+                </div>
+            </aside>
+
+        </div>
+
+        <!-- ==============================================
+             ส่วนที่ 4: FOOTER (แถบคาดยาวแบบถาวรที่ฐานล่างสุดของหน้าจอ)
+             ============================================== -->
+        <footer class="w-full bg-blue-600 bg-opacity-90 py-3 px-6 shadow-md z-20 text-center flex-shrink-0 border-t-2 border-white">
+            <p class="text-lg md:text-xl text-white font-bold tracking-wider">
+                ทำเองโดย Thamonnat Thongsuk
+            </p>
+        </footer>
+
+    </div>
+
+    <script>
+        // ==========================================
+        // 1. เริ่มการเล่นเนื้อหาและเสียงเมื่อถูกกระตุ้นการกดปุ่ม
+        // ==========================================
+        function startCredits() {
+            // เล่นเพลง
+            const audio = document.getElementById('bgm-audio');
+            audio.play().catch(err => console.log("Audio play error: ", err));
+            
+            // ซ่อนปุ่มเริ่ม และโชว์เนื้อหาหลัก
+            document.getElementById('start-btn-container').classList.add('hidden');
+            document.getElementById('main-content').classList.remove('hidden');
+            
+            // เรียกโปรแกรมสร้างคำอวยพรอิงข้อมูลแบบสอบถาม
+            generateBlessing();
+        }
+
+        // ==========================================
+        // 1.1 ฟังก์ชันเปิด-ปิดเสียง (ปรับปรุงสีพื้นหลังและสีไอคอน)
+        // ==========================================
+        let isMuted = false;
+        function toggleMute(e) {
+            e.stopPropagation(); // กันไม่ให้เวลาคลิกปุ่มนี้แล้วไปสร้างเอฟเฟกต์รูปเด้งบนจอ
+            const audio = document.getElementById('bgm-audio');
+            const muteBtn = document.getElementById('mute-btn');
+            
+            isMuted = !isMuted;
+            audio.muted = isMuted;
+
+            // สลับไอคอนและสีปุ่มตามสถานะเปิด/ปิดเสียง
+            if (isMuted) {
+                // เปลี่ยนสีปุ่มเป็นสีแดงสดเพื่อให้เห็นสถานะปิดเสียงชัดเจน
+                muteBtn.classList.remove('bg-white', 'bg-opacity-20', 'hover:bg-opacity-35', 'border-white', 'border-opacity-40');
+                muteBtn.classList.add('bg-red-500', 'bg-opacity-95', 'hover:bg-red-600', 'border-red-400');
+                
+                // ไอคอนลำโพงแบบปิดเสียง (Muted)
+                muteBtn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-7 h-7 text-white">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 9.75 19.5 12m0 0 2.25 2.25M19.5 12l2.25-2.25M19.5 12l-2.25 2.25m-10.5-6 4.72-4.72a.75.75 0 0 1 1.28.53v15.88a.75.75 0 0 1-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.009 9.009 0 0 1 2.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75Z" />
+                    </svg>
+                `;
+            } else {
+                // คืนค่าสีปุ่มเป็นแบบปกติ
+                muteBtn.classList.add('bg-white', 'bg-opacity-20', 'hover:bg-opacity-35', 'border-white', 'border-opacity-40');
+                muteBtn.classList.remove('bg-red-500', 'bg-opacity-95', 'hover:bg-red-600', 'border-red-400');
+                
+                // ไอคอนลำโพงแบบปกติ (Unmuted)
+                muteBtn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-7 h-7 text-white">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.114 5.636a9 9 0 0 1 0 12.728M16.463 8.288a5.25 5.25 0 0 1 0 7.424M6.75 8.25l4.72-4.72a.75.75 0 0 1 1.28.53v15.88a.75.75 0 0 1-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 0 1 2.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75Z" />
+                    </svg>
+                `;
+            }
+        }
+
+        // ==========================================
+        // 2. ดึงคำตอบจาก Page 2 (localStorage) และดึงข้อมูลของ "น้องแอ๊นท์" จาก index.html มาใช้
+        // ==========================================
+        function generateBlessing() {
+            // ดึงข้อมูล "น้องแอ๊นท์" ที่กรอกใน index.html (ถ้าไม่มีให้ใช้ชื่อสำรอง Thamonnat)
+            const infoForm = JSON.parse(localStorage.getItem('pinkie_info')) || { name: 'Thamonnat', nickname: 'น้องแอ๊นท์' };
+            const p2Answers = JSON.parse(localStorage.getItem('pinkie_quiz_answers')) || {};
+            
+            // ข้อมูลของ "น้องแอ๊นท์" ผู้ส่งคำอวยพร
+            const antNickname = infoForm.nickname || "น้องแอ๊นท์";
+            const antName = infoForm.name || "Thamonnat";
+            const antSurname = infoForm.surname || "Thongsuk";
+            
+            // ข้อมูลคำตอบจากแบบสอบถาม (สำหรับนำมาสร้างประโยค)
+            const food = p2Answers.food || "หมูกระทะและชาบู";
+            const activity = p2Answers.activity || "คุยกับเราและพักผ่อนเยียวยาใจ";
+            const pet = p2Answers.pet || "น้องนมสดและน้องนมจด";
+            const travel = p2Answers.travel || "ไปเที่ยวทะเลและภูเขาชิลๆ";
+            const drink = p2Answers.drink || "นมโอ๊ตกับมัตจะแก้วโปรด";
+            const style = p2Answers.style || "แต่งตัวน่ารักสดใสสไตล์คุณ";
+            const lottery = p2Answers.lottery || "รวยถูกหวยรางวัลที่ 1 ไปด้วยกัน";
+            const extraReason = localStorage.getItem('pinkie_extra_reason') || "เพราะวันเวลาที่ได้อยู่ด้วยกันมันดีและคุ้มค่าที่สุดเลย";
+
+            const blessingContainer = document.getElementById('blessing-container');
+            const blessingFooter = document.getElementById('blessing-footer');
+            
+            // ข้อความอวยพรเรียบเรียงอย่างตั้งใจเชื่อมโยงชื่อของ "น้องแอ๊นท์" ลงไปในประโยคต่าง ๆ
+            blessingContainer.innerHTML = `
+           <p> หวัดดีค้าบพี่<span class="text-pink-600 font-bold text-xl">พิงค์</span> คำอวยพรเซ็ตนี้ส่งตรงมาจากใจของ <span class="text-pink-600 font-bold text-xl">น้องแอ๊นท์</span> เขียนเอง ไม่ได้ใช้ AI 🤏🏻</p>
+
+<p> ● เริ่มต้นเดือนใหม่นี้ ก็อยากให้แกได้กินอะไรอร่อยๆ แบบอิ่มความสุขไปเลย</p>
+
+<p> ● วันไหนเหนื่อยๆ จากงานหรือจากอะไรก็คุยกับเราได้นะค้าบ</p>
+
+<p> ● และถ้าเหงาเมื่อไหร่ ก็ขอให้น้อน <span class="text-blue-500 font-semibold">นมสด</span> คอยคลายเหงาและสร้างรอยยิ้ม ให้อารมณ์ดีตลอดวันเลย</p>
+
+<p> ● แล้วก็ขอให้ได้ดื่ม <span class="text-blue-500 font-semibold">นมโอ๊ต รสสตรอว์เบอร์รี่</span> สุดโปรด กับ <span class="text-blue-500 font-semibold">มัทจะลัตเต</span> หอมอร่อยชื่นใจทุกครั้งค้าบ</p>
+
+<p> ● การแต่งตัวแกแต่งลุคไหนก็ได้ เข้าทุกลุคอยู่แล้ว แต่งตัวเท่ห์ อิอิ 😎</p>
+                <p class="text-pink-700 font-extrabold text-lg mt-4 border-t-2 border-dashed border-pink-500 pt-3">
+                     <div class="flex justify-center mt-6">
+    <img src="giphy.gif"
+         alt="Cute GIF"
+         class="h-32 md:h-40 object-contain drop-shadow-md hover:scale-105 transition-transform duration-300">
+</div>
+            `;
+
+            // ปรับแต่งข้อความทิ้งท้ายด้านล่างกล่องอวยพร
+            blessingFooter.innerHTML = `ขอให้เดือนนี้ใจดีกับ พี่พิงค์ นะค้าบ🤩 `;
+        }
+
+        // ==========================================
+        // 3. การสร้างรูปเครดิตจำนวน 28 รูป เลื่อนเรียงคู่คู่
+        // ==========================================
+        const picturesContainer = document.getElementById('pictures-container');
+        
+        // วนลูปรูปภาพ 1 ถึง 28
+        for (let i = 1; i <= 28; i++) {
+            const imgBox = document.createElement('div');
+            imgBox.className = 'w-full flex flex-col items-center';
+            
+            // เช็กเงื่อนไข: เปลี่ยนรูปภาพ 4, 12, 18, 22 เป็นไฟล์ .png นอกนั้นใช้ .jpg เหมือนเดิม
+            const ext = [4, 12, 18, 22].includes(i) ? 'png' : 'jpg';
+            
+            // โครงสร้างรูปภาพความทรงจำ
+            imgBox.innerHTML = `
+                <img src="1monthpic/${i}.${ext}" alt="Memory ${i}" class="credit-pic" onerror="this.src='https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&q=80&w=400';">
+                <p class="text-white mt-2 font-semibold text-lg text-shadow-md">Memory #${i}</p>
+            `;
+            picturesContainer.appendChild(imgBox);
+        }
+
+        // ==========================================
+        // 4. พื้นหลังลอยฟรุ้งฟริ้ง (ดาว & หัวใจ & รูปภาพ)
+        // ==========================================
+        const bgContainer = document.getElementById('bg-elements-container');
+        const heartSVG = `<svg viewBox="0 0 24 24" width="40" height="40" fill="#ffb6c1" stroke="#d81b60" stroke-width="2"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`;
+        const starSVG = `<svg viewBox="0 0 24 24" width="45" height="45" fill="#fff59d" stroke="#f57f17" stroke-width="2"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>`;
+        const catImage = `<img src="cat1.png" alt="cat" width="150" height="105" style="object-fit: contain;">`;
+        const catGifImage = `<img src="cat2.gif" alt="cat gif" width="105" height="100" style="object-fit: contain;">`;
+        const catGifImage2 = `<img src="c3.png" alt="cat gif 2" width="100" height="55" style="object-fit: contain;">`;
+
+        function createBgElement(type) {
+            const el = document.createElement('div');
+            el.className = 'bg-element';
+            
+            if (type === 'heart') { el.innerHTML = heartSVG; } 
+            else if (type === 'star') { el.innerHTML = starSVG; } 
+            else if (type === 'cat') { el.innerHTML = catImage; } 
+            else if (type === 'catGif') { el.innerHTML = catGifImage; } 
+            else if (type === 'catGif2') { el.innerHTML = catGifImage2; }
+
+            const scale = Math.random() * 0.7 + 0.5; 
+            el.style.transform = `scale(${scale})`;
+            el.style.left = `${Math.random() * 100}vw`;
+
+            const isFloatingUp = Math.random() > 0.5;
+            const duration = Math.random() * 20 + 15;
+            
+            if (isFloatingUp) {
+                el.style.animation = `floatUp ${duration}s linear infinite`;
+            } else {
+                el.style.animation = `floatDown ${duration}s linear infinite`;
+            }
+
+            el.style.animationDelay = `-${Math.random() * 50}s`;
+            bgContainer.appendChild(el);
+        }
+
+        // สร้างอย่างละ 7 ชิ้น
+        for (let i = 0; i < 7; i++) {
+            createBgElement('heart');   
+            createBgElement('star');    
+            createBgElement('cat');     
+            createBgElement('catGif');  
+            createBgElement('catGif2'); 
+        }
+
+        // ==========================================
+        // 5. เอฟเฟกต์คลิกเมาส์รูปเด้งขึ้นมา 2 วินาที (IMG_2604.jpg)
+        // ==========================================
+        document.addEventListener('click', function(e) {
+            // ไม่ให้ขึ้นรูปมาบังปุ่มกดดูครั้งแรก หรือตอนกดปุ่ม BGM
+            const tag = e.target.tagName.toLowerCase();
+            if (tag === 'button' || e.target.closest('#start-btn-container')) {
+                return; 
+            }
+
+            const imgElement = document.createElement('img');
+            imgElement.src = 'IMG_2604.jpg'; // รูปที่ต้องการให้โชว์ตอนคลิก
+            imgElement.className = 'click-img';
+            
+            // ขยับรูปให้อยู่กึ่งกลางพิกัดเมาส์ (ลบความกว้างครึ่งหนึ่ง 125px)
+            imgElement.style.left = `${e.clientX - 125}px`; 
+            imgElement.style.top = `${e.clientY - 125}px`; 
+
+            document.body.appendChild(imgElement);
+
+            // ดึงออกเมื่อลอยเด้งครบ 2 วินาทีตามใจสั่ง
+            setTimeout(() => {
+                imgElement.remove();
+            }, 2000);
+        });
+
+    </script>
+</body>
+</html>

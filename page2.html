@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>For Pinkie - แบบสอบถาม</title>
+    
+    <!-- นำเข้า Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- นำเข้า Confetti (พลุหัวใจ) เพื่อใช้ตอนกดรับสิทธิ์ -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <!-- นำเข้า Font Itim เพื่อให้เหมือนหน้าแรก -->
+    <link href="https://fonts.googleapis.com/css2?family=Itim&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Itim', cursive; 
+            background-color: #94cdf2; /* สีพื้นหลังเดียวกับหน้าแรก */
+            margin: 0;
+            overflow-x: hidden;
+            overflow-y: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            /* เปลี่ยนเมาส์เป็นรูป Kuromi */
+            cursor: url('https://img.icons8.com/color/32/000000/kuromi.png'), auto;
+        }
+
+        button, textarea {
+            cursor: url('https://img.icons8.com/color/32/000000/kuromi.png'), auto !important;
+        }
+        button {
+            cursor: url('https://img.icons8.com/color/32/000000/kuromi.png'), pointer !important;
+        }
+
+        .page-container {
+            animation: fadeIn 0.5s ease-in-out;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            z-index: 10;
+            position: relative;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* อนิเมชั่นคำว่า "อิอิ" ลอยขึ้นและจางหาย (เหมือนหน้าแรก) */
+        @keyframes floatText {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-50px) scale(1.2); }
+        }
+
+        .click-text {
+            position: fixed;
+            font-size: 3.5rem;
+            font-weight: bold;
+            pointer-events: none;
+            animation: floatText 1s ease-out forwards;
+            z-index: 9999;
+            text-shadow: 1px 1px 0 #fff, -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff;
+        }
+
+        /* Animation สำหรับพื้นหลัง */
+        .bg-element {
+            position: fixed;
+            z-index: 0;
+            opacity: 0.6;
+            pointer-events: none; /* ไม่ให้ขัดขวางการกดปุ่ม */
+        }
+        @keyframes floatUp {
+            0% { transform: translateY(110vh) rotate(0deg); }
+            100% { transform: translateY(-10vh) rotate(360deg); }
+        }
+        @keyframes floatDown {
+            0% { transform: translateY(-10vh) rotate(0deg); }
+            100% { transform: translateY(110vh) rotate(-360deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- คอนเทนเนอร์สำหรับใส่พื้นหลัง ดาว/หัวใจ/แมว -->
+    <div id="bg-elements-container"></div>
+
+    <div class="page-container">
+        <!-- กล่องขาวตรงกลางที่มี Padding และกรอบ -->
+        <div id="quiz-card" class="bg-white p-10 rounded-3xl shadow-2xl w-full max-w-md text-center border-4 border-pink-500 relative z-10 transition-all duration-300">
+            
+            <!-- ส่วนที่แสดงผลคำถาม (จะถูกเปลี่ยนเนื้อหาด้วย JavaScript) -->
+            <div id="question-section">
+                <!-- เลขบอกข้อ -->
+                <p id="progress-text" class="text-right text-gray-400 text-lg font-bold mb-2">1/10</p>
+                
+                <!-- หัวข้อคำถาม -->
+                <h2 id="question-text" class="text-2xl font-semibold text-blue-500 mb-8 min-h-[4rem] flex items-center justify-center">
+                    โหลดคำถามแป๊บ...
+                </h2>
+                
+                <!-- ปุ่มตัวเลือก -->
+                <div class="space-y-4">
+                    <button id="choice-1" onclick="nextQuestion(1)" class="w-full bg-pink-100 text-pink-600 font-semibold p-4 rounded-xl border-2 border-pink-300 hover:bg-pink-500 hover:text-white transition-all text-xl shadow-sm transform hover:-translate-y-1">
+                        ตัวเลือก 1
+                    </button>
+                    <button id="choice-2" onclick="nextQuestion(2)" class="w-full bg-blue-100 text-blue-600 font-semibold p-4 rounded-xl border-2 border-blue-300 hover:bg-blue-500 hover:text-white transition-all text-xl shadow-sm transform hover:-translate-y-1">
+                        ตัวเลือก 2
+                    </button>
+                </div>
+            </div>
+
+            <!-- ส่วนคำถามพิเศษแบบพิมพ์ตอบ (ซ่อนไว้ก่อน) -->
+            <div id="extra-question-section" class="hidden">
+                <h2 id="extra-question-text" class="text-2xl font-semibold text-blue-500 mb-6 leading-relaxed">
+                    แล้วที่ว่า วันนี้ ... เพราะอะไรเล่ามา...
+                </h2>
+                <textarea id="extra-answer" rows="4" placeholder="พิมพ์เหตุผลที่นี่เลยยย..." class="w-full mb-6 p-4 border-2 border-blue-600 rounded-xl focus:outline-none focus:border-blue-500 text-lg text-pink-600 font-medium resize-none"></textarea>
+                <button onclick="submitExtraQuestion()" class="w-full bg-pink-500 text-white font-semibold p-4 rounded-xl hover:bg-pink-600 transition-all text-xl shadow-lg transform hover:-translate-y-1">
+                    ส่งคำตอบ
+                </button>
+            </div>
+
+            <!-- ส่วนที่จะแสดงเมื่อตอบเสร็จหมดทุกอย่าง (ซ่อนไว้ก่อน) -->
+            <div id="finish-section" class="hidden">
+                <h2 class="text-3xl font-semibold text-green-500 mb-4">ทำแบบสอบถามเรียบร้อย 🎉</h2>
+                <p class="text-xl text-gray-600 mb-8 leading-relaxed">
+                    กรุณา กดปุ่มเพื่อรับสิทธิ์พิเศษ ของกระผม
+                </p>
+                <button onclick="goToPage3(event)" class="w-full bg-gradient-to-r from-pink-500 to-purple-500 text-white font-bold p-4 rounded-xl hover:from-pink-600 hover:to-purple-600 transition-all text-2xl shadow-lg transform hover:scale-105">
+                    รับสิทธิ์ ✨
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // ส่วนที่ 1: ระบบคำถาม 10 ข้อ + คำถามพิเศษ
+        // ==========================================
+        
+        const questions = [
+            { q: "ชอบกินอะไรมากกว่ากันค้าบ ?", c1: "ชาบู~~~~ ", c2: "หมูกระทะ เยียวยาทุกสิ่ง" },
+            { q: "สิ่งที่ชอบทำ ?", c1: "คุยกับเรา", c2: "ทำวิจัย" },
+            { q: "ชอบสัตว์?", c1: "น้องนมสด", c2: "น้องนมจด" },
+            { q: "ชอบไปเที่ยวที่ไหน?", c1: "ทะเล ฟังเสียงคลื่น", c2: "ภูเขา ดูธรรมชาติ" },
+            { q: "ของดื่มสุดโปรดที่ชอบที่สุด?", c1: "นมโอ๊ต รสสตอร์เบอรี่", c2: "มัตจะ ลาเต้ลาใจ" },
+            { q: "สไตล์การแต่งตัวของคุณ?", c1: "เสื้อครอปกางเกงขาสั้น เท่ๆ", c2: "เสื้อOversizedกางเกงขายาว ชิลๆ" },
+            { q: "ฤดูที่ชอบที่สุด?", c1: "ฤดูหนาว(ที่ไม่มีจริง)", c2: "ฤดูฝน นอนสบาย" },
+            { q: "คุณอยากจะตื่นตอนไหน?", c1: "ตื่นเที่ยง", c2: "ตื่นบ่าย" },
+            { q: "ถ้าถูกหวยรางวัลที่ 1 จะทำอะไร?", c1: "เปย์ตัวเองรัวๆ", c2: "เลี้ยงน้องแอ๊นท์" },
+            { q: "วันนี้อารมณ์ดีมั้ยค้าบ?", c1: "ดีม๊ากกกก!", c2: "ก็เรื่อยๆ นะ" }
+        ];
+
+        let currentIndex = 0; 
+        let selectedFinalAnswer = ""; // เก็บคำตอบข้อ 10 เอาไว้ใส่ในอีเมล
+
+        const progressText = document.getElementById('progress-text');
+        const questionText = document.getElementById('question-text');
+        const choice1Btn = document.getElementById('choice-1');
+        const choice2Btn = document.getElementById('choice-2');
+        
+        const questionSection = document.getElementById('question-section');
+        const extraQuestionSection = document.getElementById('extra-question-section');
+        const finishSection = document.getElementById('finish-section');
+        const extraQuestionText = document.getElementById('extra-question-text');
+
+        function renderQuestion() {
+            const currentQ = questions[currentIndex];
+            
+            progressText.innerText = `${currentIndex + 1}/10`;
+            questionText.innerText = currentQ.q;
+            choice1Btn.innerText = currentQ.c1;
+            choice2Btn.innerText = currentQ.c2;
+        }
+
+        function nextQuestion(choiceNumber) {
+            // เช็คว่าทำถึงข้อ 10 แล้วหรือยัง (index 9 คือข้อที่ 10)
+            if (currentIndex === 9) {
+                const currentQ = questions[currentIndex];
+                // ดูว่าผู้ใช้กดเลือกปุ่ม 1 หรือปุ่ม 2
+                selectedFinalAnswer = choiceNumber === 1 ? currentQ.c1 : currentQ.c2;
+                
+                // เปลี่ยนข้อความในคำถามพิเศษให้มีคำตอบของเขาอยู่ด้วย
+extraQuestionText.innerHTML = `แล้วที่ว่า วันนี้ <span class="text-pink-500">"${selectedFinalAnswer}"</span> เพราะอะไรเล่ามา........................................`;                
+                // ซ่อนข้อช้อยส์ และแสดงช่องพิมพ์ตอบ
+                questionSection.classList.add('hidden');
+                extraQuestionSection.classList.remove('hidden');
+                return; // หยุดทำงานแค่นี้ รอให้พิมพ์คำตอบแล้วค่อยไปต่อ
+            }
+
+            // ถ้ายังไม่ถึงข้อ 10 ก็ขยับข้อต่อไปปกติ
+            currentIndex++; 
+            if (currentIndex < 10) {
+                renderQuestion();
+            }
+        }
+
+        // ฟังก์ชันเมื่อกด "ส่งคำตอบ" ในหน้าพิมพ์ข้อความ
+        function submitExtraQuestion() {
+            const ans = document.getElementById('extra-answer').value;
+            
+            // เช็คว่าพิมพ์อะไรมาหรือเปล่า ถ้าว่างเปล่าให้เด้งเตือน
+            if (!ans.trim()) {
+                alert("พิมพ์ตอบเค้าหน่อยยย");
+                return;
+            }
+
+            // ตั้งค่าสำหรับส่งอีเมล
+            const email = "anttongsuk@gmail.com";
+            const subject = "คำตอบแบบสอบถาม (เหตุผลจากข้อ 10)";
+            const bodyText = `คำตอบที่เลือก: "${selectedFinalAnswer}"\n\nเหตุผล: ${ans}`;
+
+            // เปิดแอปอีเมลเพื่อส่งข้อความ (mailto link)
+            window.location.href = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(bodyText)}`;
+
+            // ซ่อนหน้าพิมพ์ตอบ แล้วโชว์หน้าจบเพื่อรับสิทธิ์
+            extraQuestionSection.classList.add('hidden');
+            finishSection.classList.remove('hidden');
+        }
+
+        // ฟังก์ชันเมื่อกดปุ่ม "รับสิทธิ์" ตอนจบ
+        function goToPage3(e) {
+            e.preventDefault();
+            
+            confetti({
+                particleCount: 50,
+                spread: 70,
+                origin: { y: 0.6 },
+                shapes: ['heart'],
+                colors: ['#ff69b4', '#ff1493', '#db7093']
+            });
+            
+            setTimeout(() => {
+                window.location.href = 'page3.html';
+            }, 1000);
+        }
+
+        // เรียกโชว์คำถามข้อแรก
+        renderQuestion();
+
+
+        // ==========================================
+        // ส่วนที่ 2: พื้นหลัง ดาว & หัวใจ & รูปภาพ
+        // ==========================================
+        const bgContainer = document.getElementById('bg-elements-container');
+        const heartSVG = `<svg viewBox="0 0 24 24" width="40" height="40" fill="#ffb6c1" stroke="#d81b60" stroke-width="2"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`;
+        const starSVG = `<svg viewBox="0 0 24 24" width="45" height="45" fill="#fff59d" stroke="#f57f17" stroke-width="2"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>`;
+        const catImage = `<img src="cat1.png" alt="cat" width="150" height="105" style="object-fit: contain;">`;
+        const catGifImage = `<img src="cat2.gif" alt="cat gif" width="105" height="100" style="object-fit: contain;">`;
+        const catGifImage2 = `<img src="c3.png" alt="cat gif 2" width="100" height="55" style="object-fit: contain;">`;
+
+        function createBgElement(type) {
+            const el = document.createElement('div');
+            el.className = 'bg-element';
+            
+            if (type === 'heart') { el.innerHTML = heartSVG; } 
+            else if (type === 'star') { el.innerHTML = starSVG; } 
+            else if (type === 'cat') { el.innerHTML = catImage; } 
+            else if (type === 'catGif') { el.innerHTML = catGifImage; } 
+            else if (type === 'catGif2') { el.innerHTML = catGifImage2; }
+
+            const scale = Math.random() * 0.7 + 0.5; 
+            el.style.transform = `scale(${scale})`;
+            el.style.left = `${Math.random() * 100}vw`;
+
+            const isFloatingUp = Math.random() > 0.5;
+            const duration = Math.random() * 20 + 15;
+            
+            if (isFloatingUp) {
+                el.style.animation = `floatUp ${duration}s linear infinite`;
+            } else {
+                el.style.animation = `floatDown ${duration}s linear infinite`;
+            }
+
+            el.style.animationDelay = `-${Math.random() * 50}s`;
+            bgContainer.appendChild(el);
+        }
+
+        for (let i = 0; i < 7; i++) {
+            createBgElement('heart');   
+            createBgElement('star');    
+            createBgElement('cat');     
+            createBgElement('catGif');  
+            createBgElement('catGif2'); 
+        }
+
+        // ==========================================
+        // ส่วนที่ 3: เอฟเฟกต์คลิกเมาส์แล้วขึ้นคำว่า "อิอิ" พร้อมดอกไม้
+        // ==========================================
+        const colors = ['red', 'green', 'yellow', 'deeppink', 'blue', 'cyan', 'orange', 'purple'];
+        const flowers = ['🌸', '🌼', '🌻', '🌺', '🌷', '🌹']; 
+
+        document.addEventListener('click', function(e) {
+            // ไม่ให้ขึ้นตอนกดปุ่ม หรือตอนพิมพ์ เพื่อไม่ให้กวน
+            const tag = e.target.tagName.toLowerCase();
+            if (tag === 'button' || tag === 'textarea' || tag === 'input') {
+                return; 
+            }
+
+            const textElement = document.createElement('div');
+            textElement.textContent = "อิอิ ";
+            textElement.className = 'click-text';
+            
+            const randomColor = colors[Math.floor(Math.random() * colors.length)];
+            textElement.style.color = randomColor;
+
+            textElement.style.left = `${e.clientX - 15}px`;
+            textElement.style.top = `${e.clientY - 10}px`; 
+
+            const flowerElement = document.createElement('div');
+            flowerElement.textContent = flowers[Math.floor(Math.random() * flowers.length)];
+            flowerElement.className = 'click-text';
+            
+            flowerElement.style.left = `${e.clientX + 45}px`;
+            flowerElement.style.top = `${e.clientY - 35}px`;
+
+            document.body.appendChild(textElement);
+            document.body.appendChild(flowerElement);
+
+            setTimeout(() => {
+                textElement.remove();
+                flowerElement.remove();
+            }, 1000);
+        });
+
+    </script>
+</body>
+</html>
